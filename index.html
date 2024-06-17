@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нотатки</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  form {
+    margin-bottom: 20px;
+  }
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  li {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  button.delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: red;
+    color: white;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Нотатки</h1>
+
+<form id="noteForm">
+  <label for="noteTitle">Заголовок:</label>
+  <input type="text" id="noteTitle" required>
+  <br><br>
+  <label for="noteText">Текст:</label>
+  <textarea id="noteText" required></textarea>
+  <br><br>
+  <button type="submit">Додати нотатку</button>
+</form>
+
+<ul id="noteList"></ul>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+  // Завантажуємо нотатки при завантаженні сторінки
+  loadNotes();
+
+  // Обробляємо подію надсилання форми
+  $('#noteForm').submit(function(event) {
+    event.preventDefault();
+    var noteTitle = $('#noteTitle').val();
+    var noteText = $('#noteText').val();
+    if (noteTitle && noteText) {
+      // Створюємо унікальний ID для нотатки
+      var noteId = 'note_' + Date.now();
+      // Створюємо об'єкт нотатки
+      var note = { title: noteTitle, text: noteText };
+      // Зберігаємо нотатку у localStorage
+      localStorage.setItem(noteId, JSON.stringify(note));
+      // Додаємо нову нотатку до списку на сторінці
+      addNoteToList(noteId, note);
+      // Очищуємо інпут після додавання нотатки
+      $('#noteTitle').val('');
+      $('#noteText').val('');
+    }
+  });
+
+  // Додає нотатку до списку
+  function addNoteToList(id, note) {
+    $('#noteList').append(
+      `<li data-id="${id}">
+        <h2>${note.title}</h2>
+        <p>${note.text}</p>
+        <button class="delete">Видалити</button>
+      </li>`
+    );
+  }
+
+  // Завантажуємо нотатки з localStorage і додаємо їх до списку
+  function loadNotes() {
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key.startsWith('note_')) {
+        var note = JSON.parse(localStorage.getItem(key));
+        addNoteToList(key, note);
+      }
+    }
+  }
+
+  // Видаляємо нотатку при натисканні на кнопку "Видалити"
+  $('#noteList').on('click', '.delete', function() {
+    var noteId = $(this).parent().data('id');
+    // Видаляємо нотатку з localStorage
+    localStorage.removeItem(noteId);
+    // Видаляємо нотатку з DOM
+    $(this).parent().remove();
+  });
+});
+</script>
+
+</body>
+</html>
